@@ -71,9 +71,30 @@ print(df_label_counts)
 # Plot the distribution of labels
 plt.figure(figsize=(16, 8))
 sns.countplot(y='Label', data=df_labels, palette='pastel')
-plt.title('Distribution of Labels in Training Set', fontsize=20)
+# plt.title('Distribution of Labels in Training Set', fontsize=20)
 plt.xlabel('Count', fontsize=16)
 plt.ylabel('Label', fontsize=16)
 plt.tick_params(axis='both', which='major', labelsize=12)
 plt.tight_layout()
 plt.savefig("plots/train_label_distribution.png")
+
+
+# 3. Visualize the first three images for each label category
+images_array = data_blood_train.imgs
+labels_array = data_blood_train.labels.flatten()
+
+# Create a figure with subplots
+fig, axes = plt.subplots(nrows=5, ncols=len(label_names), figsize=(15, 10))
+
+# Loop through each category and corresponding images
+for i, label in enumerate(label_names.keys()):
+    label_images = images_array[labels_array == label][:5]  # Select first three images for the category
+    for j, image in enumerate(label_images):
+        # Plot each image
+        axes[j, i].imshow(np.array(image))
+        axes[j, i].set_title(f'{label_names[label]}')
+        axes[j, i].axis('off')
+
+plt.tight_layout()
+plt.savefig("plots/cell_type_examples.png")
+
