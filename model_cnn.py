@@ -47,10 +47,6 @@ data_blood_val = torch.load("data/data_blood_val.pt")
 dataset = ConcatDataset([data_blood_train,data_blood_test, data_blood_val])
 
 
-# Encapsulate data into dataloader form
-train_loader = data.DataLoader(dataset=data_blood_train, batch_size=BATCH_SIZE, shuffle=True)
-test_loader = data.DataLoader(dataset=data_blood_val, batch_size=BATCH_SIZE, shuffle=False)
-val_loader = data.DataLoader(dataset=data_blood_test, batch_size=BATCH_SIZE, shuffle=False)
 
 
 k_folds = 10
@@ -62,6 +58,9 @@ kfold = KFold(n_splits=k_folds, shuffle=True)
 
 # fold results
 results = {}
+
+# fixed number seed
+torch.manual_seed(42)
 
 for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset)):
     print(f'FOLD {fold}')
