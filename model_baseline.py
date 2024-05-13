@@ -3,14 +3,15 @@ import torchvision.transforms as transforms
 import torch
 import torch.utils.data as data
 import torch.nn as nn
+import numpy as np
 from torch.utils.data import ConcatDataset
 import medmnist
+import seaborn as sns
 from medmnist import INFO
 from PIL import Image
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import numpy as np
 
 def reset_weights(m):
   for layer in m.children():
@@ -22,23 +23,12 @@ class convNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(
-          nn.Conv2d(3, 64, 2),
-          nn.ReLU(),
-          nn.MaxPool2d(2, 2),
-          nn.Dropout(p=0.25),
-          nn.Conv2d(64, 64, 2),
-          nn.ReLU(),
-          nn.Dropout(p=0.25),
-          nn.Flatten(),
-          nn.Linear(64*12*12, 64),
-          nn.Dropout(p=0.25),
-          nn.Linear(64, 8)
+            nn.Flatten(),
+            nn.Linear(3*28*28, 8)
         )
 
     def forward(self, x):
         return self.layers(x)
-
-
 
 
 
@@ -249,7 +239,6 @@ ConfusionMatrixDisplay(cm).plot()
 plt.show()
 
 #PLOTTING - #overfitting behavior
-
 # Plot the training and validation losses across epochs for each fold
 epochs = range(1, num_epochs + 1)
 print("epochs:", epochs)
@@ -262,3 +251,4 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
 plt.show()
+
