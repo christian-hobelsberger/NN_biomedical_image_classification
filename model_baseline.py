@@ -48,8 +48,8 @@ data_blood_test = torch.load("data/data_blood_test.pt")
 data_blood_val = torch.load("data/data_blood_val.pt")
 dataset = ConcatDataset([data_blood_train, data_blood_val])
 
-k_folds = 2
-num_epochs = 2
+k_folds = 5
+num_epochs = 10
 loss_function = nn.CrossEntropyLoss() 
 
 # k-fold cross validator
