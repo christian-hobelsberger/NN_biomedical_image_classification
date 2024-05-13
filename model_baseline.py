@@ -19,7 +19,7 @@ def reset_weights(m):
     print(f'Reset trainable parameters of layer = {layer}')
     layer.reset_parameters()
 
-class convNet(nn.Module):
+class baseLine(nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(
@@ -84,7 +84,7 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
                       batch_size=BATCH_SIZE, sampler=validation_subsampler)
     # Print the first 5 batches of data from the training loader
     # init neural network
-    model = convNet()
+    model = baseLine()
     model.apply(reset_weights)
 
 
