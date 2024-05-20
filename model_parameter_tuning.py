@@ -18,11 +18,6 @@ from sklearn.model_selection import GridSearchCV
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-def reset_weights(m):
-  for layer in m.children():
-   if hasattr(layer, 'reset_parameters'):
-    print(f'Reset trainable parameters of layer = {layer}')
-    layer.reset_parameters()
 
 class convNet(nn.Module):
     def __init__(self):
