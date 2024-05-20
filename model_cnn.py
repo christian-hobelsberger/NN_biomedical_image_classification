@@ -41,7 +41,6 @@ class convNet(nn.Module):
 
 
 
-
 data_flag = 'bloodmnist'
 download = True
 BATCH_SIZE = 128
@@ -103,7 +102,7 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
 
     train_losses_epochs= []
     val_losses_epochs = []
-   # Run the training loop for defined number of epochs
+    # Run the training loop for defined number of epochs
     # Run the training loop for defined number of epochs
     for epoch in range(num_epochs):
       print(f'Starting epoch {epoch+1}')
