@@ -58,7 +58,7 @@ data_blood_val = torch.load("data/data_blood_val.pt")
 dataset = ConcatDataset([data_blood_train, data_blood_val])
 
 k_folds = 5
-num_epochs = 10
+num_epochs = 5
 loss_function = nn.CrossEntropyLoss() 
 
 # k-fold cross validator
@@ -93,6 +93,7 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
                       batch_size=BATCH_SIZE, sampler=validation_subsampler)
     # Print the first 5 batches of data from the training loader
     # init neural network
+    
     model = convNet()
     model.apply(reset_weights)
 
@@ -102,7 +103,6 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
 
     train_losses_epochs= []
     val_losses_epochs = []
-    # Run the training loop for defined number of epochs
     # Run the training loop for defined number of epochs
     for epoch in range(num_epochs):
       print(f'Starting epoch {epoch+1}')
@@ -125,6 +125,7 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
           targets = targets.squeeze()
           #print("Sample training targets (labels):", targets[:10])
           targets = targets.type(torch.long)
+          
           loss = loss_function(outputs, targets)
           loss.backward()
           optimizer.step()
@@ -149,12 +150,17 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
 
       with torch.no_grad():
           for inputs_val, targets_val in validationloader:
-              inputs_val, targets_val = inputs_val, torch.argmax(targets_val, dim=1)
-
               outputs_val = model(inputs_val)
+              
+            #  print("Sample validation outputs (labels):", outputs_val[:10])
+              outputs_val = outputs_val.squeeze()
+            #   print("Sample validation outputs :", outputs_val[:10])
+              targets_val = targets_val.squeeze()
+            #   print("Sample validation targets (labels):", targets_val[:10])
+              targets_val = targets_val.type(torch.long)
               loss_val = loss_function(outputs_val, targets_val)
-
               _, predicted_val = torch.max(outputs_val, 1)
+    
               total_loss_val += loss_val.item()
               total_samples_val += targets_val.size(0)
               total_correct_val += (predicted_val == targets_val).sum().item()
