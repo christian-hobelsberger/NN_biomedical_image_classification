@@ -73,6 +73,8 @@ torch.manual_seed(42)
 #track losses
 train_losses_folds = []
 val_losses_folds = []
+train_accuracy_folds= []
+val_accuracy_folds = []
 '''
 Training phase
 '''
@@ -103,6 +105,8 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
 
     train_losses_epochs= []
     val_losses_epochs = []
+    train_accuracy_epochs= []
+    val_accuracy_epochs = []
     # Run the training loop for defined number of epochs
     for epoch in range(num_epochs):
       print(f'Starting epoch {epoch+1}')
@@ -139,6 +143,7 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
       train_loss = total_loss / len(trainloader)
       train_losses_epochs.append(train_loss)
       train_accuracy = total_correct_train / total_samples_train
+      train_accuracy_epochs.append(train_accuracy)
 
       print(f'Training Loss: {train_loss:.4f}, Training Accuracy: {train_accuracy:.4f}')
 
@@ -167,19 +172,28 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(dataset)):
       val_loss = total_loss_val / len(validationloader)
       val_accuracy = total_correct_val / total_samples_val
       val_losses_epochs.append(val_loss)
+      val_accuracy_epochs.append(val_accuracy)
 
 
       print(f'Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}')
 
     train_losses_folds.append(train_losses_epochs)
+    train_accuracy_folds.append(train_accuracy_epochs)
     val_losses_folds.append(val_losses_epochs)
+    val_accuracy_folds.append(val_accuracy_epochs)
+
 
 #Average across the folds for plotting
 train_losses_folds = np.array(train_losses_folds)
 train_losses_folds_averaged = np.mean(train_losses_folds, axis=0)
+train_accuracy_folds = np.array(train_accuracy_folds)
+train_accuracy_folds_averaged = np.mean(train_accuracy_folds, axis= 0)
 
 val_losses_folds = np.array(val_losses_folds)
 val_losses_folds_averaged = np.mean(val_losses_folds, axis=0) 
+val_accuracy_folds = np.array(val_accuracy_folds)
+val_accuracy_folds_averaged = np.mean(val_accuracy_folds, axis= 0)
+
 
 '''
 Test phase
@@ -234,36 +248,50 @@ print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}')
 all_predictions_np = np.array(all_predictions)
 all_targets_np = np.array(all_targets)
 
-# Check the unique labels in the test data
-unique_labels_test = np.unique(targets_test)
-print("Unique labels in the test data:", unique_labels_test)
-
-# Check the unique values in the predictions -- issue, only has 1-7, not 0-7
-unique_predictions = np.unique(all_predictions_np)
-print("Unique predictions:", unique_predictions)
-
-# Check the unique values in the targets
-unique_targets = np.unique(all_targets_np)
-print("Unique targets:", unique_targets)
-
+'''
+Plotting
+'''
 # Calculate confusion matrix
+class_labels = list(info['label'].values())
 cm = confusion_matrix(all_targets_np, all_predictions_np)
-
+print("Model - Confusion Matrix:")
+print(cm)
 # Plot confusion matrix
-ConfusionMatrixDisplay(cm).plot()
+plt.figure(figsize=(12, 6))
+ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_labels).plot()
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+# Tilt the labels
+plt.xticks(rotation=10, ha='right')
+# Reduce font size
+plt.tick_params(axis='y', which='both', labelsize=7) 
+plt.tick_params(axis='x', which='both', labelsize=6) 
+plt.title('Model - Confusion Matrix')
+plt.savefig("plots/model_confusion_matrix.png")
 plt.show()
-
-#PLOTTING - #overfitting behavior
 
 # Plot the training and validation losses across epochs for each fold
 epochs = range(1, num_epochs + 1)
-print("epochs:", epochs)
-print("train_losses_folds_Averged:", train_losses_folds_averaged)
-print("train_losses_folds:", train_losses_folds)
-plt.plot(epochs, train_losses_folds_averaged, label= 'Train')
-plt.plot(epochs, val_losses_folds_averaged, label='Validation')
-plt.title('Training and Validation Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
+plt.figure(figsize=(12, 6))
+plt.plot(epochs, train_losses_folds_averaged, label='Train', color='blue', linestyle='-', marker='o')
+plt.plot(epochs, val_losses_folds_averaged, label='Validation', color='orange', linestyle='--', marker='s')
+plt.title('Model - Training and Validation Loss', fontsize=16)
+plt.xlabel('Epoch', fontsize=14)
+plt.ylabel('Loss', fontsize=14)
+plt.grid(True)
+plt.legend(loc='upper right', fontsize=12)
+plt.savefig("plots/model_loss_plot.png")
+plt.show()
+
+# Plot the training and validation accuracy across epochs for each fold
+plt.figure(figsize=(12, 6))
+plt.plot(epochs, train_accuracy_folds_averaged, label='Train', color='blue', linestyle='-', marker='o')
+plt.plot(epochs, val_accuracy_folds_averaged, label='Validation', color='orange', linestyle='--', marker='s')
+plt.title('Model - Training and Validation Accuracy', fontsize=16)
+plt.xlabel('Epoch', fontsize=14)
+#plt.axhline(x, label = "Chance") x-> find random prediction accuracy (e.g. 0.125 for balanced 8 classes) - creates horizontal line
+plt.ylabel('Accuracy', fontsize=14)
+plt.grid(True)
+plt.legend(loc='upper left', fontsize=12)
+plt.savefig("plots/model_accuracy_plot.png")
 plt.show()
