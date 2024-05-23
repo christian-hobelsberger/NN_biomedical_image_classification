@@ -1,4 +1,3 @@
-import os
 import torch
 import torch.nn as nn
 from torch.utils.data import ConcatDataset
@@ -7,9 +6,8 @@ import numpy as np
 import pandas as pd
 from skorch import NeuralNetClassifier
 from sklearn.model_selection import GridSearchCV
-from skorch.callbacks import EarlyStopping, EpochScoring
+from skorch.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
-import plotly.express as px
 from IPython.display import display
 import seaborn as sns
 
@@ -54,7 +52,7 @@ def create_results_plot(df):
         else:
             cell.set_facecolor('#f2f2f2')
 
-    plt.savefig("nice_table.png", bbox_inches='tight', dpi=300)
+    plt.savefig("results.png", bbox_inches='tight', dpi=300)
     plt.show()
 
 
@@ -96,7 +94,7 @@ early_stopping = EarlyStopping(patience=5, threshold=0.01, threshold_mode='rel',
 model = NeuralNetClassifier(
     convNet,
     criterion=nn.CrossEntropyLoss,
-    max_epochs=5,
+    max_epochs=50,
     optimizer=torch.optim.Adam,   
     verbose=0,
     callbacks=[early_stopping] 
@@ -104,41 +102,37 @@ model = NeuralNetClassifier(
 
 
 # Define hyperparameter grid
-# param_grid = {
-#     'batch_size': [64, 128],
-#     'max_epochs': [30, 50],
-#     'lr': [0.001, 0.01, 0.1],
-# }
-
-# FOR TESTING
 param_grid = {
-    'batch_size': [64, 128],
-    'lr': [0.001]
-
+    'batch_size': [64, 128, 256],
+    'max_epochs': [30, 50],
+    'lr': [0.001, 0.01, 0.1],
 }
 
+# FOR TESTING
+# param_grid = {
+#     'batch_size': [64],
+#     'lr': [0.001]
+
+# }
+
 # Perform grid search
-grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=2, refit=False,verbose=3)
+grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=5, refit=False,verbose=3)
 grid_result = grid.fit(X_train, y_train)
 
-print(grid_result.cv_results_)
 
 # summarize results
 print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
-means = grid_result.cv_results_['mean_test_score']
+means = np.round(grid_result.cv_results_['mean_test_score'], 3)
 stds = grid_result.cv_results_['std_test_score']
 params = grid_result.cv_results_['params']
 
 for mean, stdev, param in zip(means, stds, params):
     print("%f (%f) with: %r" % (mean, stdev, param))
 
-means = grid_result.cv_results_['mean_test_score']
-stds = grid_result.cv_results_['std_test_score']
 
 
-
-tune_result_df = pd.concat([pd.DataFrame(grid.cv_results_['params']), 
-                            pd.DataFrame(grid.cv_results_['mean_test_score'], columns=['validation_accuracy'])], axis=1)
+tune_result_df = pd.concat([pd.DataFrame(params), 
+                            pd.DataFrame(means, columns=['validation_accuracy'])], axis=1)
 
 
 
@@ -146,21 +140,6 @@ create_results_plot(tune_result_df)
 
 
 
-# Save the CV results to a CSV file
-# cv_df = pd.DataFrame(grid.cv_results_)
-# cv_df.to_csv('cv_results.csv', index=False)
-
-# # Visualize the tuning results with parallel coordinate plot
-# fig = px.parallel_coordinates(tune_result_df, color='mean_test_score', labels={'mean_test_score': 'Mean Test Score'})
-# fig.show()
-
-
-# cv_df = pd.DataFrame(grid.cv_results_)
-# cv_df.to_csv('cv_results.csv', index=False)
-
-# # Visualize the tuning results with parallel coordinate plot
-# fig = px.parallel_coordinates(tune_result_df, color='mean_test_score', labels={'mean_test_score': 'Mean Test Score'})
-# fig.show()
 
 
 
