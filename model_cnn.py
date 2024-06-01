@@ -8,6 +8,8 @@ import medmnist
 from medmnist import INFO
 from PIL import Image
 from sklearn.model_selection import KFold
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 def reset_weights(m):
     for layer in m.children():
@@ -78,6 +80,9 @@ results = {}
 # fixed number seed
 torch.manual_seed(42)
 
+all_true_labels = []
+all_pred_labels = []
+
 for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset)):
     print(f'FOLD {fold}')
     print('--------------------------------')
@@ -132,6 +137,10 @@ for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset)):
         # Evaluation on test set
         correct = 0
         total = 0
+
+        true_labels = []
+        pred_labels = []
+
         with torch.no_grad():
             for data in testloader:
                 inputs, targets = data
@@ -143,9 +152,16 @@ for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset)):
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
 
+                true_labels.extend(targets.cpu().numpy())
+                pred_labels.extend(predicted.cpu().numpy())
+
         accuracy = 100 * correct / total
         print(f'Accuracy of the {model_name} on the test set: {accuracy}%')
         results[fold] = accuracy
+
+        all_true_labels.extend(true_labels)
+        all_pred_labels.extend(pred_labels)
+
 
 print('--------------------------------')
 print('K-FOLD CROSS VALIDATION RESULTS')
@@ -155,3 +171,10 @@ for key, value in results.items():
     print(f'Fold {key}: {value}%')
     sum_accuracy += value
 print(f'Average accuracy: {sum_accuracy/len(results.items())}%')
+
+# Create and plot the confusion matrix
+cm = confusion_matrix(all_true_labels, all_pred_labels)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[str(i) for i in range(n_classes)])
+disp.plot(cmap=plt.cm.Blues)
+plt.title('Confusion Matrix')
+plt.show()
