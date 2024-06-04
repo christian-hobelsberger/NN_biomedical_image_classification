@@ -19,18 +19,19 @@ def reset_weights(m):
 
 class convNet(nn.Module):
     def __init__(self):
-        super(convNet, self).__init__()
+        super().__init__()
         self.layers = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(3, 64, 2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            nn.MaxPool2d(2, 2),
+            nn.Dropout(p=0.25),
+            nn.Conv2d(64, 64, 2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(p=0.25),
             nn.Flatten(),
-            nn.Linear(64 * 7 * 7, 128),
-            nn.ReLU(),
-            nn.Linear(128, n_classes)
+            nn.Linear(64*12*12, 64),
+            nn.Dropout(p=0.25),
+            nn.Linear(64, 8)
         )
 
     def forward(self, x):
@@ -79,9 +80,6 @@ results = {}
 
 # fixed number seed
 torch.manual_seed(42)
-
-all_true_labels = []
-all_pred_labels = []
 
 for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset)):
     print(f'FOLD {fold}')
@@ -157,24 +155,41 @@ for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset)):
 
         accuracy = 100 * correct / total
         print(f'Accuracy of the {model_name} on the test set: {accuracy}%')
-        results[fold] = accuracy
+        results[(fold, model_name)] = accuracy
 
-        all_true_labels.extend(true_labels)
-        all_pred_labels.extend(pred_labels)
-
+        if model_name == 'CNN':
+            cnn_true_labels = true_labels
+            cnn_pred_labels = pred_labels
+        elif model_name == 'FFNN':
+            ffnn_true_labels = true_labels
+            ffnn_pred_labels = pred_labels
 
 print('--------------------------------')
 print('K-FOLD CROSS VALIDATION RESULTS')
 print('--------------------------------')
-sum_accuracy = 0
+sum_accuracy_cnn = 0
+sum_accuracy_ffnn = 0
 for key, value in results.items():
-    print(f'Fold {key}: {value}%')
-    sum_accuracy += value
-print(f'Average accuracy: {sum_accuracy/len(results.items())}%')
+    fold, model_name = key
+    print(f'Fold {fold} for {model_name}: {value}%')
+    if model_name == 'CNN':
+        sum_accuracy_cnn += value
+    elif model_name == 'FFNN':
+        sum_accuracy_ffnn += value
 
-# Create and plot the confusion matrix
-cm = confusion_matrix(all_true_labels, all_pred_labels)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[str(i) for i in range(n_classes)])
-disp.plot(cmap=plt.cm.Blues)
-plt.title('Confusion Matrix')
+print(f'Average accuracy for CNN: {sum_accuracy_cnn/k_folds}%')
+print(f'Average accuracy for FFNN: {sum_accuracy_ffnn/k_folds}%')
+
+# Create and plot the confusion matrix for CNN
+cm_cnn = confusion_matrix(cnn_true_labels, cnn_pred_labels)
+disp_cnn = ConfusionMatrixDisplay(confusion_matrix=cm_cnn, display_labels=[str(i) for i in range(n_classes)])
+disp_cnn.plot(cmap=plt.cm.Blues)
+plt.title('CNN Confusion Matrix')
+plt.show()
+
+# Create and plot the confusion matrix for FFNN
+cm_ffnn = confusion_matrix(ffnn_true_labels, ffnn_pred_labels)
+disp_ffnn = ConfusionMatrixDisplay(confusion_matrix=cm_ffnn, display_labels=[str(i) for i in range(n_classes)])
+disp_ffnn.plot(cmap=plt.cm.Blues)
+plt.title('Baseline Confusion Matrix')
 plt.show()
