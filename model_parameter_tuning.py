@@ -28,8 +28,7 @@ class convNet(nn.Module):
           nn.Flatten(),
           nn.Linear(64*12*12, 64),
           nn.Dropout(p=0.25),
-          nn.Linear(64, 8),
-          nn.Softmax(dim=1)
+          nn.Linear(64, 8)
         )
 
     def forward(self, x):
@@ -80,9 +79,6 @@ def split_dataset(dataset):
 X_train, y_train = split_dataset(dataset)
 
 
-# print(f"Features shape: {X_train.shape}")
-# print(f"Labels shape: {y_train.shape}")
-
 
 # patience: Number of epochs to wait for improvement of the monitor value
 # threshold: Ignore smaller improvements that the threshold value
@@ -108,12 +104,7 @@ param_grid = {
     'lr': [0.001, 0.01, 0.1],
 }
 
-# FOR TESTING
-# param_grid = {
-#     'batch_size': [64],
-#     'lr': [0.001]
 
-# }
 
 # Perform grid search
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=5, refit=False,verbose=3)
