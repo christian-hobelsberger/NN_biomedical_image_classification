@@ -26,7 +26,7 @@ git clone https://github.com/christian-hobelsberger/NN_biomedical_image_classifi
 
 This repository is organized into several key directories and files, each serving a distinct purpose in the project workflow:
 
-- [.config](https://github.com/christian-hobelsberger/NN_biomedical_image_classification/tree/main/.config): Configuration files for project settings.
+- [.config](https://github.com/christian-hobelsberger/NN_biomedical_image_classification/tree/main/.config): Configuration files for project settings including the data import.
 - [data_visualization.py](https://github.com/christian-hobelsberger/Fallacy_Detection_Language_Technology_Project/blob/main/data_visualization.py): Python script for data visualization.
 - [plots](https://github.com/christian-hobelsberger/NN_biomedical_image_classification/tree/main/plots): Directory containing plots generated from the project.
 - [model_baseline.py](https://github.com/christian-hobelsberger/Fallacy_Detection_Language_Technology_Project/blob/main/model_baseline.py): Python script for the baseline model with fixes and improved plots.
